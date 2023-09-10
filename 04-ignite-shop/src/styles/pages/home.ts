@@ -11,7 +11,6 @@ export const HomeContainer = styled('main', {
 export const Product = styled('div', {
     background: 'linear-gradient(180deg, #1ea483 0%, #7465d4 100%)',
     borderRadius: 8,
-    cursor: 'pointer',
     position: 'relative',
     overflow: 'hidden',
 
@@ -59,4 +58,29 @@ export const Product = styled('div', {
             opacity: 1
         }
     }
+});
+
+export const ProductInfos = styled('div', {
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'center',
+    alignItems: 'flex-start',
+    gap: 4,
+
+    strong: {
+        maxWidth: 256,
+        lineHeight: 1.4
+    }
+});
+
+export const HandBagBox = styled('button', {
+    display: 'flex',
+    padding: 12,
+    alignItems: "center",
+    gap: 12,
+
+    borderRadius: 6,
+    border: 0,
+    background: '$green500',
+    cursor: 'pointer'
 });
