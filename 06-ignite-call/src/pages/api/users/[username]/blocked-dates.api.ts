@@ -1,9 +1,8 @@
-/* eslint-disable camelcase */
-import { prisma } from '@/src/lib/prisma'
 // import dayjs from 'dayjs'
 import { NextApiRequest, NextApiResponse } from 'next'
+import { prisma } from '../../../../lib/prisma'
 
-export default async function handle(
+export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse,
 ) {
@@ -19,7 +18,9 @@ export default async function handle(
   }
 
   const user = await prisma.user.findUnique({
-    where: { username },
+    where: {
+      username,
+    },
   })
 
   if (!user) {
@@ -30,7 +31,9 @@ export default async function handle(
     select: {
       week_day: true,
     },
-    where: { user_id: user.id },
+    where: {
+      user_id: user.id,
+    },
   })
 
   const blockedWeekDays = [0, 1, 2, 3, 4, 5, 6].filter((weekDay) => {
@@ -40,21 +43,26 @@ export default async function handle(
   })
 
   const blockedDatesRaw: Array<{ date: number }> = await prisma.$queryRaw`
-    SELECT  
-      EXTRACT(DAY FROM S.date) as date,
-      COUNT(S.date) as amount,
-      ((UTI.time_end_in_minutes - UTI.time_start_in_minutes) / 60) as size
+    SELECT
+      EXTRACT(DAY FROM S.DATE) AS date,
+      COUNT(S.date) AS amount,
+      ((UTI.time_end_in_minutes - UTI.time_start_in_minutes) / 60) AS size
+
     FROM schedulings S
+
     LEFT JOIN user_time_intervals UTI
       ON UTI.week_day = WEEKDAY(DATE_ADD(S.date, INTERVAL 1 DAY))
+
     WHERE S.user_id = ${user.id}
       AND DATE_FORMAT(S.date, "%Y-%m") = ${`${year}-${month}`}
-    GROUP BY EXTRACT(DAY FROM S.date),
-    ((UTI.time_end_in_minutes - UTI.time_start_in_minutes) / 60)
+
+    GROUP BY EXTRACT(DAY FROM S.DATE),
+      ((UTI.time_end_in_minutes - UTI.time_start_in_minutes) / 60)
+
     HAVING amount >= size
   `
 
   const blockedDates = blockedDatesRaw.map((item) => item.date)
 
-  return res.status(200).json({ blockedWeekDays, blockedDates })
+  return res.json({ blockedWeekDays, blockedDates })
 }
